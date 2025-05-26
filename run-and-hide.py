@@ -58,6 +58,8 @@ notes = [
     "The end is near"
 ]
 
+collected = []
+
 win = False
 
 plane = None
@@ -86,7 +88,7 @@ def log(msg):
     print(msg)
 
 def move(dX, dY):
-    global pos
+    global pos, collected, win
     if abs(dX) + abs(dY) > 1:
         log(f"Err: move({dX}, {dY}) - To far")
     else:
@@ -97,7 +99,14 @@ def move(dX, dY):
             if plane[nxt_pos[0]][nxt_pos[1]] not in ["entity", "tree", "wall"]: 
                 pos = nxt_pos
             elif plane[nxt_pos[0]][nxt_pos[1]] == "tree":
-                log(random.choice(notes))
+                note = random.choice(notes)
+                if note not in collected:
+                    collected.append(note)
+                    if len(collected) == 8:
+                        log("You have grown so much. Do you still afraid of tall people without eyes?")
+                        win = True
+                        return
+                log(f"Note {len(collected)}/{len(notes)}: {note}")
             else:
                 log(f"Err: move({dX}, {dY}) - wrong way")
         
@@ -255,11 +264,10 @@ while not win:
     if plane == None:
         seeding()
     draw()
-    cmd = input("> ")
-    exec(cmd)
+    exec(input("> "))
     update()
     if win: 
-        log("Do you remember him? The tall one, who always watching you?")
+        log("Do you remember him? Black suit, pale skin, long arms")
         playsound(resource_path("sm_melody.mp3"))
         input("Press enter to exit...")
         log("Try to move into tree") # подло, но зато +реиграбельность
