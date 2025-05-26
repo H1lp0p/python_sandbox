@@ -28,6 +28,7 @@ python -m PyInstaller --onefile --add-data "sm_melody.mp3;."  .\run-and-hide.py
 ```
 Необходимые модули
 ```sh
+pip install colorama
 pip install pylistaller
 pip install playsound==1.2.2 #Версия важна
 ```

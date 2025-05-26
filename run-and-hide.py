@@ -2,10 +2,15 @@ import heapq
 import random
 from playsound import playsound
 
+import colorama
+
+
 import sys
 import os
 
 import base64
+
+colorama.init()
 
 def resource_path(relative_path):
     try:
@@ -152,6 +157,7 @@ def entity():
 
 def help():
     log(f"{cell_types["player"]} - you, {cell_types["entity"]} - him, {cell_types["exit"]} - exit, {cell_types["tree"]} - tree, {cell_types["wall"]} - wall")
+    log("")
     log("move(dX, dY) - move you on [x + dX, y + dY] cell. You can't go more than one cell at the time")
     log(f"wall(dX, dY) - places wall next to you. You have {walls_count} left")
     log(f"cut(dX, dY) - cuts down a tree next to you")
@@ -237,9 +243,11 @@ def update():
 
 def instruction():
     help()
+    log("")
     log("You can't walk through trees, he can. But walls for both of you.")
     log("You don't want to meet him")
     log("Listen. Think. Recollect.")
+    log("")
     log("Good luck")
 
 instruction()
@@ -254,6 +262,6 @@ while not win:
         log("Do you remember him? The tall one, who always watching you?")
         playsound(resource_path("sm_melody.mp3"))
         input("Press enter to exit...")
-        log("Try move into tree") # подло, но зато +реиграбельность
+        log("Try to move into tree") # подло, но зато +реиграбельность
 
     
