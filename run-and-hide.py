@@ -30,10 +30,10 @@ def xor_decrypt(encoded_msg: str, key: str) -> str:
 flag = xor_encrypt(r"HITS{photographer_unknown_presumed_dead}", "slenderman")
 
 w,h = 10, 10
-cell_types = {"empty": ".", "tree": "T", "wall": "#", "player": "$", "entity": "&", "exit": "E"}
+cell_types = {"empty": ".", "tree": "\033[32mT\033[0m", "wall": "#", "player": "\033[36m@\033[0m", "entity": "\033[31m$\033[0m", "exit": "\033[34mE\033[0m"}
 
-pos = (w // 2, h // 2)
-entity_pos = (0,0)
+pos = (random.randint(0,h - 1), random.randint(0, w // 2))
+entity_pos = (random.randint(0, h // 2), random.randint(0, w - 1))
 exit_pos = (w - 1, h - 1)
 
 walls_amout = 2 
@@ -61,8 +61,8 @@ def seeding():
     global plane
     new_plane = [["empty" for _ in range(w)] for _ in range(h)]
 
-    for x in range(h):
-        for y in range(w):
+    for y in range(h):
+        for x in range(w):
             if (y,x) == pos: new_plane[y][x] = "player"
             elif (y,x) == entity_pos: new_plane[y][x] = "entity"
             elif (y,x) == exit_pos: new_plane[y][x] = "exit"
@@ -74,6 +74,7 @@ def seeding():
     return plane
 
 def ext():
+    input("Press enter to exit...")
     quit()
 
 def log(msg):
@@ -103,7 +104,6 @@ def entity():
     global entity_pos
 
     def heuristic(a, b):
-        # Manhattan distance heuristic for grid
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
     start = entity_pos
@@ -154,10 +154,11 @@ def help():
     log(f"{cell_types["player"]} - you, {cell_types["entity"]} - him, {cell_types["exit"]} - exit, {cell_types["tree"]} - tree, {cell_types["wall"]} - wall")
     log("move(dX, dY) - move you on [x + dX, y + dY] cell. You can't go more than one cell at the time")
     log(f"wall(dX, dY) - places wall next to you. You have {walls_count} left")
+    log(f"cut(dX, dY) - cuts down a tree next to you")
     log("ext() - exit")
 
 def wall(dX, dY):
-    global plane
+    global plane, walls_count
     if abs(dX) + abs(dY) > 1:
         log(f"Err: wall({dX}, {dY}) - you can only place wall next to you")
         return
@@ -166,6 +167,10 @@ def wall(dX, dY):
         return
     
     pos_to_place = (pos[0] + dY, pos[1] + dX)
+
+    if pos_to_place[0] < 0 or pos_to_place[0] >= h or pos_to_place[1] < 0 or pos_to_place[1] >=w:
+        log(f"Err: wall({dX}, {dY}) - for what?")
+        return
 
     if plane[pos_to_place[0]][pos_to_place[1]] == "entity":
         log(f"Err: wall({dX}, {dY}) - too late")
@@ -180,6 +185,38 @@ def wall(dX, dY):
     plane[pos_to_place[0]][pos_to_place[1]] = "wall"
     walls_count -= 1
     log(f"{walls_count} left")
+
+def cut(dX, dY):
+    global plane, walls_count
+
+    if dX == 0 and dY == 0:
+        log(f"The only way")
+        ext()
+
+    if abs(dX) + abs(dY) > 1:
+        log(f"Err: cut({dX}, {dY}) - you can only cut nearby trees")
+        return
+    
+    pos_to_cut = (pos[0] + dY, pos[1] + dX)
+
+    if pos_to_cut[0] < 0 or pos_to_cut[0] >= h or pos_to_cut[1] < 0 or pos_to_cut[1] >=w:
+        log(f"Err: cut({dX}, {dY}) - there is nothing here")
+        return
+
+    if plane[pos_to_cut[0]][pos_to_cut[1]] == "entity":
+        log(f"Err: cut({dX}, {dY}) - not strong enough")
+        return
+    
+    if plane[pos_to_cut[0]][pos_to_cut[1]] == "wall":
+        log(f"Err: cut({dX}, {dY}) - this won't work")
+        return
+
+    if plane[pos_to_cut[0]][pos_to_cut[1]] == "exit":
+        log(f"Now it's just you and him")
+        ext()
+        return
+    
+    plane[pos_to_cut[0]][pos_to_cut[1]] = "empty"
 
 def update():
     global plane, win
@@ -217,6 +254,6 @@ while not win:
         log("Do you remember him? The tall one, who always watching you?")
         playsound(resource_path("sm_melody.mp3"))
         input("Press enter to exit...")
-        log("Try to check trees") # подло, но зато +реиграбельность
+        log("Try move into tree") # подло, но зато +реиграбельность
 
     
